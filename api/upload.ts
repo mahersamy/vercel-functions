@@ -1,7 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { v2 as cloudinary } from "cloudinary";
 import formidable from "formidable";
-import { Readable } from "stream";
 
 // Configure Cloudinary
 cloudinary.config({
