@@ -14,5 +14,9 @@
     "@types/node": "^25.2.1",
     "@vercel/node": "^5.5.32",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "cloudinary": "^2.9.0",
+    "formidable": "^3.5.4"
   }
 }
