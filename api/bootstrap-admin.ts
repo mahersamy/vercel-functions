@@ -38,26 +38,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Set custom claim: role = admin
-    await admin.auth().setCustomUserClaims(uid, { role: "admin" });
+    const permissions = {
+      dashboard: true,
+      reports: true,
+      inventory: true,
+      orders: true,
+      customers: true,
+      settings: true,
+    };
+
+    // Set custom claims: role = admin AND permissions
+    await admin.auth().setCustomUserClaims(uid, {
+      role: "admin",
+      permissions,
+    });
 
     // Create Firestore user document with full permissions
-    await admin
-      .firestore()
-      .collection("users")
-      .doc(uid)
-      .set({
-        role: "admin",
-        permissions: {
-          dashboard: true,
-          reports: true,
-          inventory: true,
-          orders: true,
-          customers: true,
-          settings: true,
-        },
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
+    await admin.firestore().collection("users").doc(uid).set({
+      role: "admin",
+      permissions,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
 
     res.status(200).json({
       success: true,

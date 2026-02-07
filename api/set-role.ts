@@ -20,6 +20,14 @@ const DEFAULT_PERMISSIONS = {
     customers: false,
     settings: false,
   },
+  cashier: {
+    dashboard: true,
+    reports: false,
+    inventory: false,
+    orders: true,
+    customers: true,
+    settings: false,
+  },
   user: {
     dashboard: false,
     reports: false,
@@ -74,25 +82,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: "uid and role are required" });
     }
 
-    if (!["admin", "sub_admin", "user"].includes(role)) {
+    if (!["admin", "sub_admin", "user", "cashier"].includes(role)) {
       return res
         .status(400)
         .json({ error: "Invalid role. Use: admin, sub_admin, user" });
     }
 
-    // Set custom claim
-    await admin.auth().setCustomUserClaims(uid, { role });
+    const permissions = DEFAULT_PERMISSIONS[role as Role];
+
+    // Set custom claims (Role + Permissions)
+    await admin.auth().setCustomUserClaims(uid, { role, permissions });
 
     // Update or create Firestore user document
     const userRef = admin.firestore().collection("users").doc(uid);
     const userDoc = await userRef.get();
 
     if (userDoc.exists) {
-      await userRef.update({ role });
+      await userRef.update({ role, permissions });
     } else {
       await userRef.set({
         role,
-        permissions: DEFAULT_PERMISSIONS[role as Role],
+        permissions,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     }

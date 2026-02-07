@@ -1,0 +1,61 @@
+### Vercel Serverless API Tests
+# This file can be used with the "REST Client" extension in VS Code
+# or imported into Postman as a set of requests.
+
+@baseUrl = http://localhost:3000
+@adminToken = YOUR_FIREBASE_ID_TOKEN
+@bootstrapSecret = YOUR_BOOTSTRAP_ADMIN_SECRET
+@targetUid = TARGET_USER_UID
+
+### 1. Cloudinary: Get Signature
+# Use this to get a signature for client-side uploads
+GET {{baseUrl}}/api/cloudinary-sign
+
+### 2. Cloudinary: Upload File
+# Requires multipart/form-data. 
+# NOTE: In Postman, go to Body -> form-data, add key "file" of type "File"
+POST {{baseUrl}}/api/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.txt"
+Content-Type: text/plain
+
+test file content
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 3. Auth: Bootstrap First Admin
+# Run this once to make yourself an admin.
+# Header 'x-bootstrap-secret' must match BOOTSTRAP_ADMIN_SECRET in .env
+POST {{baseUrl}}/api/bootstrap-admin
+Content-Type: application/json
+x-bootstrap-secret: {{bootstrapSecret}}
+
+{
+    "uid": "{{targetUid}}"
+}
+
+### 4. RBAC: Set User Role
+# Requires a valid Firebase ID Token from an Admin user
+POST {{baseUrl}}/api/set-role
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "uid": "{{targetUid}}",
+    "role": "admin"
+}
+
+### 5. RBAC: Update User Permissions
+# Toggle specific permissions for a user
+POST {{baseUrl}}/api/update-permissions
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "uid": "{{targetUid}}",
+    "permissions": {
+        "reports": true,
+        "inventory": false
+    }
+}

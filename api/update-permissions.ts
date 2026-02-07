@@ -97,9 +97,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     await userRef.update({ permissions: updatedPermissions });
 
+    // Sync permissions to Auth Token Custom Claims
+    // We keep the existing role and only update the permissions
+    await admin.auth().setCustomUserClaims(uid, {
+      role: currentData?.role,
+      permissions: updatedPermissions,
+    });
+
     res.status(200).json({
       success: true,
-      message: "Permissions updated",
+      message: "Permissions updated and synced to token",
       permissions: updatedPermissions,
     });
   } catch (error: any) {
