@@ -56,6 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const file = fileArray[0];
+    
 
     // Upload to Cloudinary using upload_stream
     const uploadResult = await new Promise((resolve, reject) => {
