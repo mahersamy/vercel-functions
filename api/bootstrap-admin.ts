@@ -39,12 +39,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const permissions = {
-      dashboard: true,
-      reports: true,
-      inventory: true,
-      orders: true,
-      customers: true,
-      settings: true,
+      dashboard: { read: true, write: true },
+      reports: { read: true, write: true },
+      inventory: { read: true, write: true },
+      orders: { read: true, write: true },
+      customers: { read: true, write: true },
+      settings: { read: true, write: true },
     };
 
     // Set custom claims: role = admin AND permissions

@@ -1,13 +1,15 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import admin from "../lib/firebase-admin";
 
+type Permission = { read: boolean; write: boolean };
+
 type Permissions = {
-  dashboard: boolean;
-  reports: boolean;
-  inventory: boolean;
-  orders: boolean;
-  customers: boolean;
-  settings: boolean;
+  dashboard: Permission;
+  reports: Permission;
+  inventory: Permission;
+  orders: Permission;
+  customers: Permission;
+  settings: Permission;
 };
 
 /**

@@ -1,40 +1,40 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import admin from "../lib/firebase-admin";
 
-type Role = "admin" | "sub_admin" | "user";
+type Role = "admin" | "sub_admin" | "user" | "cashier";
 
 const DEFAULT_PERMISSIONS = {
   admin: {
-    dashboard: true,
-    reports: true,
-    inventory: true,
-    orders: true,
-    customers: true,
-    settings: true,
+    dashboard: { read: true, write: true },
+    reports: { read: true, write: true },
+    inventory: { read: true, write: true },
+    orders: { read: true, write: true },
+    customers: { read: true, write: true },
+    settings: { read: true, write: true },
   },
   sub_admin: {
-    dashboard: true,
-    reports: false,
-    inventory: false,
-    orders: false,
-    customers: false,
-    settings: false,
+    dashboard: { read: true, write: true },
+    reports: { read: false, write: false },
+    inventory: { read: false, write: false },
+    orders: { read: false, write: false },
+    customers: { read: false, write: false },
+    settings: { read: false, write: false },
   },
   cashier: {
-    dashboard: true,
-    reports: false,
-    inventory: false,
-    orders: true,
-    customers: true,
-    settings: false,
+    dashboard: { read: true, write: false },
+    reports: { read: false, write: false },
+    inventory: { read: true, write: false }, // Can see stock
+    orders: { read: true, write: true }, // Can process orders
+    customers: { read: true, write: true }, // Can add customers
+    settings: { read: false, write: false },
   },
   user: {
-    dashboard: false,
-    reports: false,
-    inventory: false,
-    orders: false,
-    customers: false,
-    settings: false,
+    dashboard: { read: false, write: false },
+    reports: { read: false, write: false },
+    inventory: { read: false, write: false },
+    orders: { read: false, write: false }, // Standard users don't manage orders
+    customers: { read: false, write: false },
+    settings: { read: false, write: false },
   },
 };
 
