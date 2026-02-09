@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper 1: Check Role from Token (Fast & Free)
+    // Use this for "Super Admin" only areas (like the Users collection)
+    function isAdmin() {
+      return request.auth.token.role == 'admin';
+    }
+
+    // Helper 2: Check Granular Permission from Token
+    // Use this for modules like Orders, Inventory, etc.
+    // Example: allow read: if hasPermission('orders', 'read');
+    function hasPermission(module, access) {
+      return request.auth.token.permissions[module][access] == true;
+    }
+
+    // Users Collection: STRICTLY Admin Only
+    match /users/{userId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

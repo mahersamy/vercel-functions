@@ -64,7 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .json({ error: "uid and permissions are required" });
     }
 
-    // Validate permissions object
+    // Validate permissions keys and structure
     const validKeys = [
       "dashboard",
       "reports",
@@ -73,13 +73,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       "customers",
       "settings",
     ];
-    const invalidKeys = Object.keys(permissions).filter(
-      (k) => !validKeys.includes(k),
-    );
-    if (invalidKeys.length > 0) {
-      return res
-        .status(400)
-        .json({ error: `Invalid permissions: ${invalidKeys.join(", ")}` });
+
+    for (const [key, value] of Object.entries(permissions)) {
+      if (!validKeys.includes(key)) {
+        return res
+          .status(400)
+          .json({ error: `Invalid permission module: ${key}` });
+      }
+      // Ensure strict structure { read: boolean, write: boolean }
+      // This prevents sending "true" or partial objects that break the schema
+      if (
+        typeof value !== "object" ||
+        typeof value.read !== "boolean" ||
+        typeof value.write !== "boolean"
+      ) {
+        return res.status(400).json({
+          error: `Permission '${key}' must be { read: boolean, write: boolean }`,
+        });
+      }
     }
 
     // Update Firestore permissions
@@ -92,15 +103,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Merge with existing permissions
     const currentData = userDoc.data();
+    const currentPermissions = currentData?.permissions || {};
+
+    // Create the new permissions object by merging
+    // Since we validated the input is complete {read, write}, we can overwrite the module key safely
     const updatedPermissions = {
-      ...currentData?.permissions,
+      ...currentPermissions,
       ...permissions,
     };
 
     await userRef.update({ permissions: updatedPermissions });
 
-    // Sync permissions to Auth Token Custom Claims
-    // We keep the existing role and only update the permissions
+    // Sync permissions to Auth Token Custom Claims (The "Pin")
     await admin.auth().setCustomUserClaims(uid, {
       role: currentData?.role,
       permissions: updatedPermissions,
